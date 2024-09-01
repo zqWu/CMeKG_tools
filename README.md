@@ -38,6 +38,30 @@ NER: 链接:https://pan.baidu.com/s/16TPSMtHean3u9dJSXF9mTw  密码:shwh
 
 分词：链接:https://pan.baidu.com/s/1bU3QoaGs2IxI34WBx7ibMQ  密码:yhek
 
+#### 文件下载后, 放到 项目根目录 cmekg
+```
+cmekg
+├── medical_cws
+│    ├── config.json
+│    ├── pytorch_model.bin
+│    ├── pytorch_model.pkl
+│    ├── special_tokens_map.json
+│    ├── tokenizer_config.json
+│    └── vocab.txt
+├── medical_ner
+│    ├── config.json
+│    ├── model.pkl
+│    ├── pytorch_model.bin
+│    └── vocab.txt
+├── medical_re
+│    ├── config.json
+│    ├── model_re.pkl
+│    ├── predicate.json
+│    ├── pytorch_model.bin
+│    └── vocab.txt
+
+```
+
 ## 依赖库
 
 - json
@@ -49,6 +73,8 @@ NER: 链接:https://pan.baidu.com/s/16TPSMtHean3u9dJSXF9mTw  密码:shwh
 - re
 - time
 - tqdm
+
+### 更新依赖 见 requirements.txt
 
 ## 模型使用
 
@@ -76,7 +102,7 @@ medical_re.run_train()
 
 model_re/train_example.json 是训练文件示例
 
-- 使用
+- 使用. 文件 model_re/model_re.py
 
 ```python
 import medical_re

@@ -7,18 +7,20 @@ Original file is located at
     https://colab.research.google.com/drive/1nddzA4hsk1pr9u1HobaxbAJr2M1QAr-K
 """
 
-import random
+import gc
 import json
+import random
+import re
+import time
+from itertools import cycle
+
 import numpy as np
 import torch
 import torch.nn as nn
-# from constant import ProductionConfig as Path
-from transformers import BertTokenizer, BertModel, AdamW
-from itertools import cycle
-import gc
-import random
-import time
-import re
+from transformers import BertModel, AdamW, BertTokenizer
+
+from project_root_dir import get_project_root_dir
+
 
 class config:
     batch_size = 32
@@ -27,16 +29,21 @@ class config:
     learning_rate = 1e-5
     EPOCH = 2
 
-    PATH_SCHEMA = "/Users/yangyf/workplace/model/medical_re/predicate.json"
-    PATH_TRAIN = '/Users/yangyf/workplace/model/medical_re/train_data.json'
-    PATH_BERT = "/Users/yangyf/workplace/model/medical_re/"
-    PATH_MODEL = "/Users/yangyf/workplace/model/medical_re/model_re.pkl"
-    PATH_SAVE = '/content/model_re.pkl'
-    tokenizer = BertTokenizer.from_pretrained("/Users/yangyf/workplace/model/medical_re/" + 'vocab.txt')
+    project_root_dir = get_project_root_dir()  # 当前项目根目录
+    # PATH_SCHEMA = "/Users/yangyf/workplace/model/medical_re/predicate.json"
+    # PATH_TRAIN = '/Users/yangyf/workplace/model/medical_re/train_data.json'
+    # PATH_BERT = "/Users/yangyf/workplace/model/medical_re/"
+    # PATH_MODEL = "/Users/yangyf/workplace/model/medical_re/model_re.pkl"
+    # PATH_SAVE = '/content/model_re.pkl'
+    # tokenizer = BertTokenizer.from_pretrained("/Users/yangyf/workplace/model/medical_re/" + 'vocab.txt')
+
+    PATH_SCHEMA = project_root_dir + "/cmekg/medical_re/predicate.json"
+    PATH_MODEL = project_root_dir + "/cmekg/medical_re/model_re.pkl"
+    PATH_BERT = project_root_dir + "/cmekg/medical_re"
+    tokenizer = BertTokenizer.from_pretrained(project_root_dir + "/cmekg/medical_re/vocab.txt")
 
     id2predicate = {}
     predicate2id = {}
-
 
 
 class IterableDataset(torch.utils.data.IterableDataset):
@@ -108,6 +115,7 @@ class IterableDataset(torch.utils.data.IterableDataset):
 
     def __iter__(self):
         return self.get_stream()
+
 
 # 就是
 class Model4s(nn.Module):
@@ -419,11 +427,11 @@ def load_model():
     checkpoint = torch.load(config.PATH_MODEL, map_location='cpu')
 
     model4s = Model4s()
-    model4s.load_state_dict(checkpoint['model4s_state_dict'])
+    model4s.load_state_dict(checkpoint['model4s_state_dict'], False)
     # model4s.cuda()
 
     model4po = Model4po()
-    model4po.load_state_dict(checkpoint['model4po_state_dict'])
+    model4po.load_state_dict(checkpoint['model4po_state_dict'], False)
     # model4po.cuda()
 
     return model4s, model4po
@@ -444,22 +452,19 @@ def get_triples(content, model4s, model4po):
         })
     return res
 
+
 if __name__ == "__main__":
-
-    with open(config.PATH_TRAIN, 'r', encoding="utf-8", errors='replace') as f:
-        data = json.load(f)
-
-        f1=open("train.json","w")
-
-        json.dump(data,f1,ensure_ascii=False,indent=True)
-        print("finish")
-
-    # load_schema(config.PATH_SCHEMA)
-    # model4s, model4po = load_model()
+    # with open(config.PATH_TRAIN, 'r', encoding="utf-8", errors='replace') as f:
+    #     data = json.load(f)
     #
-    # text = "据报道称，新冠肺炎患者经常会发热、咳嗽，少部分患者会胸闷、=乏力，其病因包括: 1.自身免疫系统缺陷\n2.人传人。"
+    #     f1 = open("train.json", "w")
     #
-    # res = get_triples(text, model4s, model4po)
+    #     json.dump(data, f1, ensure_ascii=False, indent=True)
+    #     print("finish")
 
-    # print(res)
+    load_schema(config.PATH_SCHEMA)
+    model4s, model4po = load_model()
+    text = "据报道称，新冠肺炎患者经常会发热、咳嗽，少部分患者会胸闷、=乏力，其病因包括: 1.自身免疫系统缺陷\n2.人传人。"
+    res = get_triples(text, model4s, model4po)
 
+    print(res)

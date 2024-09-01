@@ -1,0 +1,6 @@
+numpy==1.22.4
+#torch
+transformers==4.8.0
+tqdm==4.66.4
+# python=3.8
+# conda install pytorch==1.7.1 cudatoolkit=9.2 -c pytorch
